@@ -1300,8 +1300,9 @@ if (typeof module !== 'undefined') module.exports = M;
   function api(body) {
     var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, t = setTimeout(function () { if (ctl) ctl.abort(); }, 45000), p;
     var op = { redirect: 'follow' }; if (ctl) op.signal = ctl.signal;
-    if (body) { body.clave = cfg.clave; op.method = 'POST'; op.headers = { 'Content-Type': 'text/plain;charset=utf-8' }; op.body = JSON.stringify(body); p = fetch(cfg.url, op); }
-    else p = fetch(cfg.url + (cfg.url.indexOf('?') < 0 ? '?' : '&') + 'accion=datos&clave=' + encodeURIComponent(cfg.clave) + '&t=' + Date.now(), op);
+    // la clave viaja siempre dentro del cuerpo (POST), nunca en la dirección
+    if (!body) body = { accion: 'datos' };
+    body.clave = cfg.clave; op.method = 'POST'; op.headers = { 'Content-Type': 'text/plain;charset=utf-8' }; op.body = JSON.stringify(body); p = fetch(cfg.url, op);
     return p.then(function (r) { return r.text(); }).then(function (x) { clearTimeout(t); try { return JSON.parse(x); } catch (e) { throw new Error('formato'); } }, function (e) { clearTimeout(t); throw new Error('red'); });
   }
   function aplicaOpLocal(op) {
@@ -1344,7 +1345,7 @@ if (typeof module !== 'undefined') module.exports = M;
     b.className = 'e-' + cl; b.innerHTML = '<i></i>' + tx;
   }
   function textoError(e) {
-    return { clave: 'La clave no coincide con la del script.', sin_clave: 'El script aún no tiene clave: defínela en el menú Finanzas de tu hoja.', formato: 'La URL no respondió como se esperaba. Revisa que sea la que termina en /exec y que el acceso sea "Cualquier usuario".', red: 'No hubo conexión con el script. Revisa tu internet y la URL.', clave_corta: 'La clave debe tener al menos 4 caracteres.' }[e] || ('Error: ' + e);
+    return { clave: 'La clave no coincide con la del script.', sin_clave: 'El script aún no tiene clave: defínela en el menú Finanzas de tu hoja.', formato: 'La URL no respondió como se esperaba. Revisa que sea la que termina en /exec y que el acceso sea "Cualquier usuario".', red: 'No hubo conexión con el script. Revisa tu internet y la URL.', clave_corta: 'La clave debe tener al menos 12 caracteres.', bloqueado: 'Demasiados intentos fallidos. Espera 10 minutos e intenta de nuevo.', usar_post: 'Actualiza la app: está usando una versión anterior.' }[e] || ('Error: ' + e);
   }
 
   /* ---------- filas de movimiento ---------- */
@@ -2168,7 +2169,7 @@ if (typeof module !== 'undefined') module.exports = M;
     var n = cola.length + enVuelo.length, H = CIERRA + '<h2>Conexión y clave</h2>';
     if (cfg.url) {
       H += '<p class="sub">Conectada a tu hoja de Google. La hoja es la fuente de verdad; este dispositivo guarda una copia.</p>' + dato('Última sincronización', red.ultimo ? new Date(red.ultimo).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : 'aún no en esta sesión') + dato('Cambios por subir', n) + (red.error ? '<div class="banda r" style="margin-top:10px">' + textoError(red.error) + '</div>' : '') +
-        '<div class="btns"><button class="btn" data-a="syncYa">Sincronizar ahora</button></div><h3>Cambiar la clave de acceso</h3><div class="fcl">' + campo('Nueva clave', inp('nueva', '', 'type="password" placeholder="Mínimo 4 caracteres"'), 'Se cambia en el script y en este dispositivo. En otros dispositivos habrá que escribirla de nuevo.') + '<button class="btn sec2" data-a="cambiarClave">Cambiar clave</button></div>' +
+        '<div class="btns"><button class="btn" data-a="syncYa">Sincronizar ahora</button></div><h3>Cambiar la clave de acceso</h3><div class="fcl">' + campo('Nueva clave', inp('nueva', '', 'type="password" placeholder="Mínimo 12 caracteres"'), 'Se cambia en el script y en este dispositivo. En otros dispositivos habrá que escribirla de nuevo.') + '<button class="btn sec2" data-a="cambiarClave">Cambiar clave</button></div>' +
         '<h3>Este dispositivo</h3><button class="btn pel" data-a="desconectar">Desconectar y borrar la copia local</button>';
     } else {
       H += '<p class="sub">Hoy los datos viven solo en este dispositivo. Conéctala a tu hoja de Google para respaldarlos y usarlos en otros dispositivos.</p><div class="fco">' + campo('URL del script', inp('url', '', 'type="url" placeholder="https://script.google.com/macros/s/…/exec"')) + campo('Clave', inp('clave', '', 'type="password"')) + '<div class="err" hidden></div><button class="btn" data-a="conectar">Conectar</button></div>' +
@@ -2419,7 +2420,7 @@ if (typeof module !== 'undefined') module.exports = M;
     local: function () { cfg.modo = 'local'; cfg.url = ''; cfg.clave = ''; pon(LS.cfg, cfg); $('#acceso').hidden = true; pintar(); },
     syncYa: function () { cerrar(); red.vueltas = 0; red.error = ''; sincronizar(); },
     cambiarClave: function (el) {
-      var n = String(leerForm(el.closest('.fcl')).nueva || '').trim(); if (n.length < 4) return toast('La clave debe tener al menos 4 caracteres.');
+      var n = String(leerForm(el.closest('.fcl')).nueva || '').trim(); if (n.length < 12) return toast('La clave debe tener al menos 12 caracteres.');
       el.disabled = true;
       api({ accion: 'clave', nueva: n }).then(function (d) { if (!d.ok) throw new Error(d.error); cfg.clave = n; pon(LS.cfg, cfg); cerrar(); toast('Clave cambiada'); })
         .catch(function (e) { el.disabled = false; toast(textoError(e.message)); });
