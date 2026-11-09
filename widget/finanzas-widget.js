@@ -11,7 +11,7 @@
 //   4. En la pantalla de inicio: mantén presionado, +, Scriptable, elige tamaño, toca el widget y en
 //      "Script" elige Finanzas. Funciona en chico, mediano y grande.
 //
-// Solo lee tus datos: no registra ni cambia nada en tu hoja.
+// Solo lee tus datos (accion 'datos' por POST): no registra ni cambia nada en tu hoja.
 
 const APP_URL_DEF = 'https://urouno.github.io/finanzas/'; // donde abres la app; se puede cambiar al configurar
 const LLAVE = 'finanzas.widget.cfg';
@@ -51,12 +51,18 @@ async function configurar(prev) {
 async function aviso(t) { const a = new Alert(); a.message = t; a.addAction('OK'); await a.presentAlert(); }
 
 /* ---------- datos y motor (con copia para cuando no hay señal) ---------- */
-async function bajaTexto(url) { const r = new Request(url); r.timeoutInterval = 20; return await r.loadString(); }
+async function bajaTexto(url, cuerpo) {
+  const r = new Request(url);
+  r.timeoutInterval = 20;
+  if (cuerpo) { r.method = 'POST'; r.headers = { 'Content-Type': 'text/plain;charset=utf-8' }; r.body = JSON.stringify(cuerpo); }
+  return await r.loadString();
+}
 async function datos(cfg) {
   try {
-    const t = await bajaTexto(cfg.url + (cfg.url.includes('?') ? '&' : '?') + 'accion=datos&clave=' + encodeURIComponent(cfg.clave) + '&t=' + Date.now());
+    // tu script solo entrega datos por POST, con la clave en el cuerpo (nunca en la dirección)
+    const t = await bajaTexto(cfg.url, { accion: 'datos', clave: cfg.clave });
     const d = JSON.parse(t);
-    if (!d || !d.ok) throw new Error(d && d.error === 'clave' ? 'La clave no coincide' : 'Respuesta inesperada');
+    if (!d || !d.ok) throw new Error({ clave: 'la clave no coincide', bloqueado: 'demasiados intentos, espera 10 minutos', sin_clave: 'el script aún no tiene clave' }[d && d.error] || 'respuesta inesperada');
     fm.writeString(ruta('datos.json'), t);
     return { d, fresco: true, fecha: new Date() };
   } catch (e) {

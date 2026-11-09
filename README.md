@@ -29,4 +29,4 @@ Widget para la app [Scriptable](https://scriptable.app) que muestra un consejo p
 2. Ábrelo una vez y escribe la URL `/exec` de tu script, tu clave y la dirección donde abres la app. Se guardan en el llavero del iPhone.
 3. Agrega un widget de Scriptable (chico, mediano o grande) y elige el script "Finanzas".
 
-Solo lee (`accion=datos`); no cambia nada en tu hoja. Se actualiza cada 30 minutos y, sin señal, muestra la última copia.
+Solo lee (pide `datos` por POST, como la app); no cambia nada en tu hoja. Se actualiza cada 30 minutos y, sin señal, muestra la última copia.
