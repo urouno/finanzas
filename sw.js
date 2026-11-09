@@ -12,7 +12,7 @@
  *
  * Va en la misma carpeta de GitHub que index.html.
  */
-var CACHE = 'finanzas-v2';
+var CACHE = 'finanzas-v3';
 var APP = ['./', './index.html'];
 var ESPERA_MS = 3000;
 
