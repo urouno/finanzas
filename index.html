@@ -1892,7 +1892,81 @@ var M = (function () {
     };
   }
 
+  /* ---------- consejos: guía corta y accionable (la usan Inicio y el widget del teléfono) ---------- */
+  // No solo describen ("estás en rojo"): dicen qué hacer y qué se gana. Cada uno lleva prioridad, tipo
+  // (alerta, guia, logro) y una clave k para que cada pantalla elija cuáles mostrar.
+  var MESC = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'], DIASL = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  function fmt0(n) { n = Math.round(+n || 0); return (n < 0 ? '−' : '') + '$' + String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function ymTxt(ym) { return MESC[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4); }
+  function plazoTxt(ym) { var n = mesesEntre(hoy().slice(0, 7), ym); return n <= 0 ? 'este mes' : 'en ' + n + ' mes' + (n === 1 ? '' : 'es') + ' (' + ymTxt(ym) + ')'; }
+  function diaTxt(f) { var n = Math.round((parse(f) - parse(hoy())) / 864e5); return n <= 0 ? 'hoy' : n === 1 ? 'mañana' : n < 7 ? 'el ' + DIASL[parse(f).getDay()] : 'el ' + parse(f).getDate() + ' de ' + MESC[parse(f).getMonth()]; }
+  function consejos(P) {
+    P = P || plan();
+    var h = hoy(), ym = h.slice(0, 7), out = [];
+    function add(prio, k, tipo, ico, t, x) { out.push({ prio: prio, k: k, tipo: tipo, ico: ico, t: t, x: x }); }
+    if (P.fase === 'datos') add(95, 'datos', 'guia', 'target', 'Arma tu plan', 'Escribe tu ingreso mensual en la app y te diré cuánto destinar a deudas, ahorro y metas.');
+
+    // pagos atrasados o incompletos
+    var atr = alertas().filter(function (a) { return a.m && a.clase !== 'ingreso'; });
+    if (atr.length) {
+      var a0 = atr[0];
+      add(100, 'atrasado', 'alerta', 'alert', a0.t === 'incompleto' ? 'Cubre el resto de tu pago' : atr.length > 1 ? atr.length + ' pagos sin confirmar' : 'Pago sin confirmar: ' + a0.m.concepto,
+        a0.t === 'incompleto' ? 'Lo que quedó pendiente (' + fmt0(a0.m.monto) + ') genera intereses cada día; págalo en cuanto puedas.' : (atr.length > 1 ? 'Si ya los pagaste, confírmalos' : 'Si ya lo pagaste, confírmalo') + ' en la app para que tus números cuadren. Si no, págalo hoy y evitas intereses y comisiones.');
+    }
+    // cómo va el mes
+    if (P.fase === 'estabilizar') add(90, 'estabilizar', 'alerta', 'speed', 'Gastas más de lo que entra', 'En un mes normal te faltan ' + fmt0(-P.L) + '. ' + (P.topVar[0] ? 'Empieza por ' + P.topVar[0].cat + ': hoy se lleva ' + fmt0(P.topVar[0].v) + ' al mes.' : 'Recorta primero tu gasto variable.'));
+    var r = resumenMes(ym), rt = ritmoMes(ym);
+    if ((r.ingresos > 0 || r.varConf > 0) && rt.restan > 0) {
+      var disp = r.disponible, dia = disp / rt.restan, vas = rt.pasados > 0 ? (r.varConf - r.noReg) / rt.pasados : 0; // el ajuste de saldo no es ritmo diario
+      if (disp < 0) add(88, 'ritmo', 'alerta', 'speed', 'Este mes ya no hay margen', 'Te pasaste ' + fmt0(-disp) + '. Lo que gastes en los próximos ' + rt.restan + ' días saldrá de tus ahorros o de una tarjeta: solo lo indispensable.');
+      else if (rt.pasados >= 3 && vas > dia * 1.15) add(66, 'ritmo', 'alerta', 'speed', 'Baja el ritmo a ' + fmt0(dia) + ' al día', 'Vas gastando ' + fmt0(vas) + ' diarios y así no llegas. Con ' + fmt0(dia) + ' al día cierras el mes sin tocar tu ahorro.');
+      else add(44, 'ritmo', 'logro', 'speed', 'Hoy puedes gastar hasta ' + fmt0(dia), (vas > 0 ? 'Vas bien: llevas ' + fmt0(vas) + ' al día. ' : '') + 'Te quedan ' + fmt0(disp) + ' para ' + rt.restan + ' días.');
+    }
+    // pago que se acerca y si alcanza el dinero
+    var px = listaPagos({ desde: h, hasta: addDays(h, 3), estados: { pend: 1 } }).filter(function (x) { return x.clase !== 'ingreso' && !x.m.incompleto && +x.m.monto > 0; })[0];
+    if (px) {
+      var pr = proyeccion(addDays(h, 7)), no = pr.min < 0;
+      add(no ? 86 : 54, 'pago', no ? 'alerta' : 'guia', 'cal', px.m.concepto + ' ' + diaTxt(px.m.fecha), fmt0(px.m.monto) + (no ? '. Con lo programado tu débito queda en ' + fmt0(pr.min) + ' esta semana: mueve dinero o recorta antes de esa fecha.' : '. Ya lo tienes cubierto: págalo a tiempo y no generas intereses.'));
+    }
+    // la deuda en la que te enfocas
+    if (P.fase === 'deudas' || P.fase === 'colchon' || P.fase === 'estabilizar') {
+      var foco = P.deudas.filter(function (d) { return d.cara && d.orden === 1; })[0];
+      if (foco) {
+        var usado = 0;
+        S.movs.forEach(function (m) { if (m.tipo === 'gasto' && m.origen === foco.id && m.estado === 'confirmado' && m.fuente !== 'ajuste' && !esMens(m) && m.fecha.slice(0, 7) === ym) usado += +m.monto || 0; });
+        var cu = foco.finYm ? plazoTxt(foco.finYm) : '';
+        if (foco.rev && usado > 0.5) add(80, 'foco', 'alerta', 'card', 'Pausa tu ' + foco.nombre, 'Este mes le cargaste ' + fmt0(usado) + ' y es la deuda que estás liquidando. ' + (cu ? 'Sin compras nuevas queda en cero ' + cu + '.' : 'Cada compra nueva la aleja.'));
+        else if (cu) add(60, 'foco', 'guia', 'card', foco.rev ? 'No uses ' + foco.nombre + ': solo abónale' : 'Enfócate en ' + foco.nombre,
+          (foco.extra > 0.5 ? 'Abonando ' + fmt0(foco.extra) + ' al mes queda en cero ' + cu + '.' : 'Primero tu colchón; después todo lo que te sobre va aquí y queda en cero ' + cu + '.') + (foco.interes > 0.5 ? ' Hoy te cuesta unos ' + fmt0(foco.interes) + ' al mes de intereses.' : ''));
+      }
+      if (P.libreYm && P.libreYm > ym) add(28, 'libre', 'logro', 'trend', 'Libre de deudas caras en ' + ymTxt(P.libreYm), 'Faltan ' + mesesEntre(ym, P.libreYm) + ' meses. Cada peso extra que abones acerca esa fecha.');
+    }
+    // tarjetas muy usadas
+    var tu = alertas().filter(function (a) { return a.c; }).sort(function (a, b) { return b.uso - a.uso; })[0];
+    if (tu) add(tu.t === 'sin' ? 72 : 50, 'tcuso', 'alerta', 'card', tu.c.nombre + ' al ' + Math.round(tu.uso) + ' % de su límite', tu.t === 'sin' ? 'Ya no tiene crédito disponible: no la uses y abónale para recuperar margen.' : 'Usar mucho del límite afecta tu historial de crédito. Déjala descansar hasta bajarla.');
+    // presupuestos
+    var pb = presupuestoMes(ym), ex = pb.lineas.filter(function (l) { return l.est === 'r'; })[0], ce = pb.lineas.filter(function (l) { return l.est === 'a'; })[0];
+    if (ex) add(68, 'pres', 'alerta', 'pie', 'Te pasaste en ' + ex.cat, 'Rebasaste su tope por ' + fmt0(-ex.restante) + '. Compénsalo recortando en otra categoría lo que resta del mes.');
+    else if (ce && rt.restan > 0) add(48, 'pres', 'guia', 'pie', 'Cuida ' + ce.cat, 'Ya usaste el ' + Math.round(ce.pct) + ' % del tope: te quedan ' + fmt0(ce.restante) + ' para ' + rt.restan + ' días.');
+    // colchón y fondo de emergencia
+    if (P.fase === 'colchon') add(58, 'colchon', 'guia', 'shield', 'Aparta ' + fmt0(P.mes0.fondo || P.mini - P.fondo) + ' para imprevistos', 'Con ' + fmt0(P.mini) + ' guardados una emergencia ya no termina en la tarjeta. Llevas ' + fmt0(P.fondo) + (P.miniYm ? ' y lo completas en ' + ymTxt(P.miniYm) : '') + '.');
+    if (P.fase === 'fondo') add(52, 'fondo', 'guia', 'shield', 'Tu fondo cubre ' + P.fondoMeses.toFixed(1) + ' de ' + P.cfg.mesesFondo + ' meses', 'Aparta ' + fmt0(P.mes0.fondo) + ' este mes' + (P.fondoYm ? ' y lo completas en ' + ymTxt(P.fondoYm) : '') + '. Guárdalo donde rinda y lo puedas sacar el mismo día.');
+    // metas
+    var mt = P.metas.filter(function (o) { return o.est !== 'lograda'; }).sort(function (a, b) { return a.m.fecha < b.m.fecha ? -1 : 1; });
+    mt.slice(0, 2).forEach(function (o, i) {
+      var p = Math.round(o.pct);
+      if (o.est === 'ajustar') add(50 - i, 'meta', 'alerta', 'flag', o.m.nombre + ' va atrasada', 'A tu ritmo llega en ' + ymTxt(o.finYm) + '. Con ' + fmt0(o.extraMes) + ' más al mes llegas a tiempo, o mueve la fecha.');
+      else if (o.est === 'inviable') add(46 - i, 'meta', 'alerta', 'flag', 'Replantea ' + o.m.nombre, 'Con tus números actuales no se alcanza: prueba un plazo más largo o un costo menor.');
+      else if (o.aporte > 0.5) add(42 - i, 'meta', p >= 50 ? 'logro' : 'guia', 'flag', o.m.nombre + ': aparta ' + fmt0(o.aporte) + ' este mes', (p >= 50 ? '¡Ya llevas ' + p + ' %! ' : 'Llevas ' + p + ' %. ') + 'Así llegas a tiempo para ' + ymTxt(o.m.fecha) + '.');
+      else add(30 - i, 'meta', 'guia', 'flag', o.m.nombre + ' sigue en pie', 'Va a tiempo para ' + ymTxt(o.m.fecha) + '; empiezas a aportar ' + (o.primerYm ? 'en ' + ymTxt(o.primerYm) : 'pronto') + ', cuando tu plan libere dinero.');
+    });
+    if (P.fase === 'crecer') add(26, 'crecer', 'logro', 'trend', 'Tu base está sana', 'Sin deudas caras y con tu fondo completo. ' + (P.mes0.inv > 0.5 ? 'Invierte ' + fmt0(P.mes0.inv) + ' al mes y deja que trabaje para ti.' : 'Ahora tu dinero va a tus metas.'));
+    if (P.verif.viejo) add(34, 'saldos', 'guia', 'refresh', 'Actualiza tus saldos', (P.verif.nunca ? 'Aún no comparas tus cuentas con tu banco.' : 'Hace ' + P.verif.peor + ' días que no los comparas con tu banco.') + ' Así el plan sigue siendo real aunque no registres todo.');
+    return out.sort(function (a, b) { return b.prio - a.prio; });
+  }
+
   return {
+    consejos: consejos, fmt0: fmt0,
     T: T, CAT_FAVOR: CAT_FAVOR, AJUSTES_DEF: AJUSTES_DEF, r2: r2, iso: iso, parse: parse, hoy: hoy, addDays: addDays, addMonths: addMonths, finMes: finMes, iniMes: iniMes, uid: uid, vac: vac,
     setHoy: function (s) { hoyFijo = s; }, norm: norm, usar: usar, estado: estado, tomarLog: tomarLog, cta: cta, mov: mov, dim: dim, ritmoMes: ritmoMes,
     esActivo: esActivo, esPrestamo: esPrestamo, esTarjeta: esTarjeta, pctCta: pctCta, pctMov: pctMov, propio: propio, esMens: esMens, esCompraMeses: esCompraMeses, vista: vista, clasePago: clasePago,
@@ -2004,9 +2078,14 @@ if (typeof module !== 'undefined') module.exports = M;
     else { var f = JSON.parse(JSON.stringify(op.fila)); if (i >= 0) a[i] = f; else a.push(f); }
   }
   function recibir(d) {
+    var antes = { plan_cfg: S.ajustes.plan_cfg, plan_metas: S.ajustes.plan_metas };
     S = M.usar(M.norm(d));
     cola.forEach(aplicaOpLocal);
     S = M.usar(M.norm(S));
+    // Si la hoja devolvió los ajustes sin el plan (un Apps Script que solo guarda ajustes conocidos),
+    // se conserva la copia de este dispositivo y se avisa, para no perder metas ni datos del plan.
+    red.planLocal = false;
+    ['plan_cfg', 'plan_metas'].forEach(function (k) { if (!S.ajustes[k] && antes[k]) { S.ajustes[k] = antes[k]; red.planLocal = true; } });
     M.tomarLog(); M.regenerar(); migrar(); encolar(M.tomarLog());
     guardarLocal();
   }
@@ -3317,9 +3396,12 @@ if (typeof module !== 'undefined') module.exports = M;
       (x.m ? '<strong>' + x.m + (x.u ? '<small>' + x.u + '</small>' : '') + '</strong>' : x.a ? ICO_DER : '') + '</' + tag + '>';
   }
   function tarjPlanInicio() {
-    var P = M.plan(), fi = infoFase(P), ac = accionesPlan(P)[0], vf = P.verif;
-    var H = '<section class="tarj"><div class="cab"><span class="eti">Tu plan</span>' + (fi.idx >= 0 ? '<span class="et ' + fi.et + '">Paso ' + (fi.idx + 1) + ' de 5</span>' : '') + '</div>' +
-      '<div class="pm-r">' + badge(fi.ico, fi.col) + '<div><b>' + fi.t + '</b>' + (ac ? '<span>Siguiente paso: ' + ac.t.replace(/<em[^>]*>.*?<\/em>/, '') + (ac.m ? ', <b class="num" style="display:inline">' + ac.m + (ac.u === 'al mes' ? ' al mes' : '') + '</b>' : '') + '</span>' : '') + '</div></div>' + pasosHTML(P);
+    var P = M.plan(), fi = infoFase(P), vf = P.verif;
+    // el mismo consejo que muestra el widget; se omiten los que Inicio ya enseña en otras tarjetas
+    var cj = M.consejos(P).filter(function (x) { return ['atrasado', 'ritmo', 'pago', 'tcuso', 'pres', 'saldos'].indexOf(x.k) < 0; })[0];
+    var H = '<section class="tarj"><div class="cab"><span class="eti">Tu plan · ' + (fi.idx >= 0 ? 'paso ' + (fi.idx + 1) + ' de 5' : 'por armar') + '</span><span class="et ' + fi.et + '">' + (fi.idx >= 0 ? PASOS_C[fi.idx] : 'Nuevo') + '</span></div>' +
+      (cj ? '<div class="pm-r">' + badge(cj.ico, { alerta: 'var(--neg)', guia: 'var(--tc)', logro: 'var(--pos)' }[cj.tipo]) + '<div><b>' + esc(cj.t) + '</b><span>' + esc(cj.x) + '</span></div></div>'
+        : '<div class="pm-r">' + badge(fi.ico, fi.col) + '<div><b>' + fi.t + '</b></div></div>') + pasosHTML(P);
     if (vf.viejo) H += '<div class="ritmo">' + badge('refresh', 'var(--tc)', 's') + '<p>' + (vf.nunca === vf.l.length ? 'Actualiza tus saldos reales para que el plan parta de tu situación de hoy.' : textoVerif(vf)) + '</p><button class="btn sec2 chico" data-a="saldos">Actualizar</button></div>';
     return H + '<button class="ver" data-a="ir" data-v="plan">Ver mi plan' + ICO_DER + '</button></section>';
   }
@@ -3435,6 +3517,7 @@ if (typeof module !== 'undefined') module.exports = M;
   function vPlan() {
     var t = ui.plan.tab, nm = M.metas().filter(function (m) { return !m.lograda; }).length;
     var H = '<div class="seg tabs" role="tablist">' + [['plan', 'Mi plan'], ['metas', 'Metas'], ['pres', 'Presupuesto']].map(function (x) { return '<button type="button" role="tab" data-a="planTab" data-v="' + x[0] + '" class="' + (t === x[0] ? 'on' : '') + '" aria-selected="' + (t === x[0]) + '">' + x[1] + (x[0] === 'metas' && nm ? ' <span class="cnt n">' + nm + '</span>' : '') + '</button>'; }).join('') + '</div>';
+    if (red.planLocal) H += '<div class="banda r">Tu hoja de Google no guardó tus metas ni los datos del plan: por ahora viven solo en este dispositivo. Tu Apps Script debe aceptar dos ajustes nuevos, <b>plan_cfg</b> y <b>plan_metas</b>.</div>';
     if (t === 'pres') return H + '<div class="angosto">' + vPresupuesto() + '</div>';
     if (!S.cuentas.length) return H + '<section class="tarj vacio-m">' + badge('wallet', 'var(--pos)') + '<h2>Primero, tus cuentas</h2><p>Da de alta tu cuenta de débito y tus tarjetas para que el plan parta de tu situación real.</p><div class="btns"><button class="btn" data-a="nuevaCuenta">Dar de alta una cuenta</button></div></section>';
     var P = M.plan();

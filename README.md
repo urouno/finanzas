@@ -18,3 +18,15 @@ No se agregaron hojas ni columnas. Todo vive en la hoja `ajustes`, como texto JS
 - `plan_metas`: lista de metas.
 
 Los ajustes de saldo son movimientos normales en `movs` (columnas existentes: `fuente`, `categoria`, `notas`).
+
+Si tu Apps Script solo guarda ajustes que ya conoce, la app lo detecta: conserva el plan en el dispositivo y muestra un aviso en Plan. En ese caso hay que permitir `plan_cfg` y `plan_metas` en el script.
+
+## Widget para iPhone (`widget/finanzas-widget.js`)
+
+Widget para la app [Scriptable](https://scriptable.app) que muestra un consejo para hoy (qué hacer, qué evitar y cuánto falta), no solo saldos. Usa el mismo motor que la app (`M.consejos`), así ambos dicen lo mismo.
+
+1. Instala Scriptable, crea un script nuevo, pega el archivo y llámalo "Finanzas".
+2. Ábrelo una vez y escribe la URL `/exec` de tu script, tu clave y la dirección donde abres la app. Se guardan en el llavero del iPhone.
+3. Agrega un widget de Scriptable (chico, mediano o grande) y elige el script "Finanzas".
+
+Solo lee (`accion=datos`); no cambia nada en tu hoja. Se actualiza cada 30 minutos y, sin señal, muestra la última copia.
