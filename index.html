@@ -6,9 +6,10 @@
 <title>Finanzas</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Finanzas">
-<meta name="theme-color" content="#0F172A">
+<meta name="theme-color" content="#F6F7F9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1422" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
@@ -732,6 +733,59 @@ body.en-registro #fab{display:none}
   .mt:hover{border-color:var(--gris)}
 }
 @keyframes aparece{from{opacity:0; transform:translate(-50%,-48%) scale(.98)}}
+
+/* ===================== v7: paleta serena, encabezado claro y gráficas de Inicio ===================== */
+/* Menos saturación: el color solo marca estado (verde bien, ámbar cuidado, rojo rebasado); lo demás es neutro.
+   Las categorías usan tonos apagados para que una lista larga no canse la vista. */
+:root{
+  --bg:#F6F7F9; --sup:#FFFFFF; --sup2:#EEF1F5; --tinta:#1B2433; --gris:#667085; --linea:#E4E8EE;
+  --marca:#0E7A5F; --btn:#0E7A5F; --pos:#0E7A5F; --neg:#C9483B; --aviso:#DDA23A; --avi-t:#96620F; --tc:#4472C4; --comp:#7A62BF; --prest:#8E6B2E; --abono:#3E8FA6;
+  --pos-s:#EAF5F0; --neg-s:#FBEFEC; --aviso-s:#FBF4E3; --tc-s:#ECF1FA; --comp-s:#F1EEF9; --gris-s:#EEF1F5; --abono-s:#E9F4F7; --prest-s:#F6F0E0;
+  --k1:#5079C6; --k2:#3F9C82; --k3:#D3A347; --k4:#C76F80; --k5:#8674C2; --k6:#4F9FB4; --k7:#CC8558; --k8:#9AA5B4;
+  --sombra:0 1px 2px rgba(27,36,51,.04);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#0E1422; --sup:#161E2E; --sup2:#202A3C; --tinta:#DDE3EC; --gris:#93A0B4; --linea:#27324A;
+  --marca:#56C7A2; --btn:#17876A; --pos:#56C7A2; --neg:#EC8B7F; --aviso:#E2B75E; --avi-t:#E2B75E; --tc:#7EA3E4; --comp:#A998E2; --prest:#D0A772; --abono:#6DBFD4;
+  --pos-s:#143229; --neg-s:#3A2020; --aviso-s:#372D16; --tc-s:#1B2A47; --comp-s:#292344; --gris-s:#202A3C; --abono-s:#14303A; --prest-s:#332A16;
+  --k1:#7EA3E4; --k2:#62C0A3; --k3:#DDB868; --k4:#DE8D9D; --k5:#A998E2; --k6:#72BFD4; --k7:#DDA17D; --k8:#6B7A90; --sombra:none } }
+:root[data-theme="dark"]{
+  --bg:#0E1422; --sup:#161E2E; --sup2:#202A3C; --tinta:#DDE3EC; --gris:#93A0B4; --linea:#27324A;
+  --marca:#56C7A2; --btn:#17876A; --pos:#56C7A2; --neg:#EC8B7F; --aviso:#E2B75E; --avi-t:#E2B75E; --tc:#7EA3E4; --comp:#A998E2; --prest:#D0A772; --abono:#6DBFD4;
+  --pos-s:#143229; --neg-s:#3A2020; --aviso-s:#372D16; --tc-s:#1B2A47; --comp-s:#292344; --gris-s:#202A3C; --abono-s:#14303A; --prest-s:#332A16;
+  --k1:#7EA3E4; --k2:#62C0A3; --k3:#DDB868; --k4:#DE8D9D; --k5:#A998E2; --k6:#72BFD4; --k7:#DDA17D; --k8:#6B7A90; --sombra:none }
+
+/* encabezado claro también en el teléfono: una sola superficie, sin bloque oscuro arriba */
+#top{background:var(--bg); background:color-mix(in srgb,var(--bg) 88%,transparent); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); color:var(--tinta); border-bottom:1px solid var(--linea)}
+#sync{background:var(--sup); color:var(--tinta); border:1px solid var(--linea)}
+#sync i{background:var(--pos)} #sync.e-pend i{background:var(--aviso)} #sync.e-error i{background:var(--neg)} #sync.e-local i{background:var(--gris); opacity:1}
+.btn{background:var(--btn)} .btn.sec2{background:var(--sup2); color:var(--tinta)} .btn.pel{background:transparent; color:var(--neg)} .btn.lin{background:transparent; color:var(--marca)}
+#fab{box-shadow:0 6px 16px rgba(14,122,95,.26),0 2px 5px rgba(27,36,51,.1)}
+
+/* registrar: el monto en una caja neutra; el color queda en el signo y en el borde al escribir */
+.montoBox{background:var(--bg); border-color:var(--linea)} .montoBox:focus-within{border-color:var(--tk); box-shadow:0 0 0 3px var(--tks)}
+.fechaR{min-width:0} .fechaR input{flex:1 1 0; min-width:0; padding-left:10px; padding-right:6px; font-size:15px}
+
+/* gráficas de barras: altura fija (antes crecían con el ancho y en escritorio el texto salía enorme) */
+.barras{position:relative} .barras svg{height:150px}
+.barras .bmax{position:absolute; left:2px; top:0; font:500 10.5px var(--num); color:var(--gris); font-variant-numeric:tabular-nums; pointer-events:none}
+
+/* Inicio: gasto acumulado del mes contra el mes pasado */
+.rg-n{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin:2px 0 10px}
+.rg-n b{font:700 24px/1.1 var(--disp); letter-spacing:-.02em; font-variant-numeric:tabular-nums} .rg-n span{font-size:12.5px; color:var(--gris)}
+.rg-ch{position:relative} .rg-ch svg{display:block; width:100%; height:132px; overflow:visible}
+.rg-ch .bmax{position:absolute; left:0; top:-2px; font:500 10.5px var(--num); color:var(--gris); font-variant-numeric:tabular-nums}
+.rg-ch .pt{position:absolute; width:11px; height:11px; margin:-5.5px 0 0 -5.5px; border-radius:50%; background:var(--marca); border:2.5px solid var(--sup); box-shadow:0 0 0 1px var(--marca)}
+.rg-ch .tp-l{position:absolute; right:0; transform:translateY(-100%); font:500 10.5px var(--num); color:var(--gris); padding-bottom:2px}
+.rg-x{display:flex; justify-content:space-between; font:500 10.5px var(--num); color:var(--gris); margin-top:4px; font-variant-numeric:tabular-nums}
+.rg .leyenda{margin-top:8px} .leyenda i.ry{width:14px; height:0; border-radius:0; border-top:2px dashed var(--gris); background:none} .leyenda i.pn{width:14px; height:0; border-radius:0; border-top:2px dotted var(--marca); background:none} .leyenda i.ln{width:14px; height:2px; border-radius:1px; background:var(--aviso)}
+.rg-c{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--linea)}
+.rg-c button{display:block; min-width:0; text-align:left; padding:8px 10px; border-radius:12px; background:var(--bg)}
+.rg-c span{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--gris); white-space:nowrap; overflow:hidden; text-overflow:ellipsis} .rg-c span i{flex:none; width:8px; height:8px; border-radius:50%}
+.rg-c b{display:block; font:650 14.5px var(--num); font-variant-numeric:tabular-nums; margin-top:1px}
+.rg-c u{display:block; height:3px; border-radius:2px; background:var(--sup2); margin-top:6px; overflow:hidden; text-decoration:none} .rg-c u i{display:block; height:100%; border-radius:2px}
+.rg .ritmo{margin-top:12px}
+@media (min-width:1024px){ #top{background:var(--bg)} .rg-ch svg{height:160px} .barras svg{height:190px} }
 </style>
 </head>
 <body>
@@ -1515,7 +1569,7 @@ var M = (function () {
   }
   function confirmar(id, monto, fecha, saldoNuevo) {
     var m = mapa.get(id); if (!m) return;
-    var p = { estado: 'confirmado', monto: r2(monto), fecha: fecha || m.fecha, aproximado: false, editado: true };
+    var p = { estado: 'confirmado', monto: r2(monto === undefined || monto === null || monto === '' ? m.monto : monto), fecha: fecha || m.fecha, aproximado: false, editado: true };
     var pc = pctMov(m); if (pc < 100) p.montoPropio = r2(p.monto * pc / 100);
     parche('movs', m, p);
     var d = cta(m.destino);
@@ -2335,6 +2389,48 @@ if (typeof module !== 'undefined') module.exports = M;
     if (peor) toast(nomCat(peor.cat) + (peor.est === 'r' ? ': rebasaste el tope por ' + din0(-peor.restante) : ': llevas el ' + Math.round(peor.pct) + ' % del tope'));
   }
 
+  // gasto acumulado día a día: este mes (línea), lo planeado que falta (punteado) y el mes pasado (rayado) para comparar el ritmo
+  function ritmoGasto(ym, ritmo) {
+    var h = M.hoy(), hd = +h.slice(8), g = M.graficaMes(ym), ymP = M.addMonths(ym + '-01', -1, 1).slice(0, 7), gp = M.graficaMes(ymP), n = g.dias.length;
+    var ac = [], acP = [], pl = [], s = 0, sp = 0, i, pend = 0;
+    for (i = 0; i < n; i++) {
+      if (i < hd) { s += g.dias[i].gas; ac.push(s); pend += g.dias[i].gasP; if (i === hd - 1) pl.push(s); }
+      else { pend += g.dias[i].gasP; pl.push(s + pend); }
+    }
+    for (i = 0; i < gp.dias.length; i++) { sp += gp.dias[i].gas; if (i < n) acP.push(sp); else acP[n - 1] = sp; }
+    if (s < 0.5 && sp < 0.5 && pend < 0.5) return '';
+    var pb = M.presupuestoMes(ym), tope = pb.general ? +pb.general.tope || 0 : 0, fin = pl[pl.length - 1];
+    var mx = Math.max(s, fin, sp, 1); if (tope > 0 && tope <= mx * 2.5) mx = Math.max(mx, tope); else tope = 0;
+    function X(d) { return n > 1 ? (d - 1) / (n - 1) * 300 : 150; }
+    function Y(v) { return 104 - v / mx * 94; }
+    function linea(a, d0) { return a.map(function (v, k) { return (k ? 'L' : 'M') + X(d0 + k).toFixed(1) + ',' + Y(v).toFixed(1); }).join(' '); }
+    var pa = linea(ac, 1), nse = 'vector-effect="non-scaling-stroke" fill="none" stroke-linejoin="round" stroke-linecap="round"';
+    var R = '<line x1="0" x2="300" y1="104" y2="104" style="stroke:var(--linea)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+      '<line x1="0" x2="300" y1="' + Y(mx / 2).toFixed(1) + '" y2="' + Y(mx / 2).toFixed(1) + '" style="stroke:var(--linea)" stroke-width="1" stroke-dasharray="2 4" vector-effect="non-scaling-stroke"/>';
+    if (tope) R += '<line x1="0" x2="300" y1="' + Y(tope).toFixed(1) + '" y2="' + Y(tope).toFixed(1) + '" style="stroke:var(--aviso)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>';
+    if (sp > 0.5) R += '<path d="' + linea(acP, 1) + '" style="stroke:var(--gris)" stroke-width="1.5" stroke-dasharray="4 4" opacity=".7" ' + nse + '/>';
+    if (ac.length > 1) R += '<path d="' + pa + ' L' + X(hd).toFixed(1) + ',104 L0,104 Z" style="fill:var(--pos-s)"/>';
+    if (pend > 0.5 && pl.length > 1) R += '<path d="' + linea(pl, hd) + '" style="stroke:var(--marca)" stroke-width="1.5" stroke-dasharray="1 5" ' + nse + '/>';
+    R += '<path d="' + pa + '" style="stroke:var(--marca)" stroke-width="2.5" ' + nse + '/>';
+    var antes = acP.length ? acP[Math.min(hd, acP.length) - 1] : 0, et = '', mesP = MESL[+ymP.slice(5) - 1], mc = MES[+ym.slice(5) - 1];
+    if (antes > 0.5) {
+      var dp = (s - antes) / antes * 100;
+      et = Math.abs(dp) < 3 ? '<span class="et">igual que en ' + mesP + '</span>' : '<span class="et ' + (dp < 0 ? 'v' : 'a') + '">' + Math.round(Math.abs(dp)) + ' % ' + (dp < 0 ? 'menos' : 'más') + ' que en ' + mesP + '</span>';
+    }
+    var top = g.cats.slice(0, 3), mc0 = top.length ? top[0].v : 1;
+    return '<section class="tarj rg"><div class="cab"><h2>Gasto del mes</h2>' + et + '</div>' +
+      '<div class="rg-n"><b>' + din0(s) + '</b><span>gastados al día ' + hd + (pend > 0.5 ? ' · ' + din0(pend) + ' más ya planeados' : '') + '</span></div>' +
+      '<div class="rg-ch"><svg viewBox="0 0 300 110" preserveAspectRatio="none" role="img" aria-label="Gasto acumulado: ' + din0(s) + ' al día ' + hd + (antes > 0.5 ? '; el mes pasado iban ' + din0(antes) : '') + '">' + R + '</svg>' +
+      (tope && tope >= mx * 0.9 ? '' : '<span class="bmax">' + corto(mx) + '</span>') + (tope ? '<span class="tp-l" style="top:' + (Y(tope) / 110 * 100).toFixed(1) + '%">tope ' + corto(tope) + '</span>' : '') +
+      '<i class="pt" style="left:' + (X(hd) / 3).toFixed(2) + '%; top:' + (Y(s) / 110 * 100).toFixed(2) + '%"></i></div>' +
+      '<div class="rg-x"><span>1 ' + mc + '</span>' + (n > 20 ? '<span>15</span>' : '') + '<span>' + n + ' ' + mc + '</span></div>' +
+      '<div class="leyenda"><span><i style="background:var(--marca)"></i>este mes</span>' + (pend > 0.5 ? '<span><i class="pn"></i>planeado</span>' : '') + (sp > 0.5 ? '<span><i class="ry"></i>' + mesP + '</span>' : '') + (tope ? '<span><i class="ln"></i>tope</span>' : '') + '</div>' +
+      (ritmo || '') +
+      (top.length ? '<div class="rg-c">' + top.map(function (c) {
+        return '<button data-a="ir" data-v="analisis" aria-label="' + esc(c.k) + ': ' + din0(c.v) + '. Ver análisis"><span><i style="background:' + colCat(c.k) + '"></i>' + esc(c.k) + '</span><b>' + din0(c.v) + '</b><u><i style="width:' + (c.v / mc0 * 100).toFixed(0) + '%; background:' + colCat(c.k) + '"></i></u></button>';
+      }).join('') + '</div>' : '') + '</section>';
+  }
+
   /* ---------- Inicio ---------- */
   function vInicio() {
     var h = M.hoy(), ym = h.slice(0, 7), r = M.resumenMes(ym), p = M.posicion(null), q = M.posicion(M.finMes(h)), ini = S.ajustes.fecha_inicio, H = '';
@@ -2359,6 +2455,7 @@ if (typeof module !== 'undefined') module.exports = M;
           : 'Quedan <b>' + rt.restan + ' días</b>. Puedes gastar <b class="num">' + din0(alDia) + ' al día</b>; vas en <b class="num">' + din0(vas) + '</b>.') +
         '</p><span class="et ' + est[0] + '">' + est[1] + '</span></div>';
     }
+    var rgH = ritmoGasto(ym, ritmo);
     H += '<section class="tarj hero2"><div class="cab"><span class="eti">Te queda para gastar en ' + mes + '</span><span class="et ' + (pas ? 'r' : 'v') + '">' + (pas ? 'Rebasado' : 'En presupuesto') + '</span></div>' +
       '<div class="gran' + (pas ? ' neg' : '') + '">' + dinG(d) + '</div>' +
       '<div class="barrera" role="img" aria-label="Fijos pagados ' + din(r.fijoConf) + ', fijos por pagar ' + din(r.fijoPend) + ', variables gastados ' + din(r.varConf) + ', variables planeados ' + din(r.varPend) + ', libre ' + din(d) + '">' +
@@ -2367,7 +2464,7 @@ if (typeof module !== 'undefined') module.exports = M;
       '<div class="leyenda"><span><i style="background:var(--tinta)"></i>Fijos</span><span><i style="background:var(--aviso)"></i>Variables</span><span><i style="background:var(--pos)"></i>Libre</span><span>Rayado: por pagar</span></div>' +
       '<div class="tiles">' + tile('var(--pos)', 'Ingresos', din0(r.ingresos)) + tile('var(--tinta)', 'Fijos · ' + pctF.toFixed(0) + ' %', din0(r.fijoTotal)) + tile('var(--aviso)', 'Variables', din0(r.varConf + r.varPend)) + '</div>' +
       (dif < 0 ? '<div class="banda r" style="margin:12px 0 0">Los fijos superan tus ingresos por <b class="num">' + din(-dif) + '</b>.</div>' : '') +
-      ritmo +
+      (rgH ? '' : ritmo) +
       '<details class="desg"><summary>Ver desglose</summary><div class="dz">' +
       dato('Ingresos recibidos', din(r.ingConf), 'pos') + dato('Ingresos por recibir', din(r.ingPlan)) +
       dato('Fijos ya pagados', din(r.fijoConf)) + dato('Fijos por pagar', din(r.fijoPend), r.fijoPend ? 'avi' : '') +
@@ -2377,11 +2474,12 @@ if (typeof module !== 'undefined') module.exports = M;
       (r.abonos ? dato('Devoluciones y abonos', din(-r.abonos), 'pos') : '') +
       dato('Presupuesto para variables', din(r.presupuestoVar), r.presupuestoVar < 0 ? 'neg' : 'pos') +
       (rp.varConf ? dato('Variables del mes pasado', din(rp.varConf), 'gr') : '') + '</div></details></section>';
-    H += tarjPlanInicio();
+    var medio = rgH + tarjPlanInicio();  // lo urgente va antes: primero "Requiere atención", luego la gráfica y el plan
 
     // ---- 2. Requiere atención: pagos atrasados, presupuestos al límite y tarjetas muy usadas ----
     var al = M.alertas(), pagos = al.filter(function (a) { return a.m; }), uso = al.filter(function (a) { return a.c; }), um = +S.ajustes.umbral_uso || 40;
-    var pb = M.presupuestoMes(ym);
+    var pb = M.presupuestoMes(ym), yaVisto = {};
+    pagos.slice(0, 4).forEach(function (a) { yaVisto[a.m.id] = 1; });  // lo que ya sale en "Requiere atención" no se repite abajo
     if (pagos.length || uso.length) {
       H += '<div class="sec"><span>Requiere atención</span>' + (pagos.length > 4 ? '<button data-a="ir" data-v="pagos">Ver los ' + pagos.length + ' pagos</button>' : '') + '</div><div class="lista">' + pagos.slice(0, 4).map(function (a) {
         var ing = a.clase === 'ingreso';
@@ -2396,6 +2494,8 @@ if (typeof module !== 'undefined') module.exports = M;
       }).join('')) + '</div>';
     }
 
+    H += medio;
+
     // ---- 3. Presupuesto del mes (resumen; el detalle está en Plan › Presupuesto) ----
     H += '</div><div class="col">';
     H += '<section class="tarj"><div class="cab"><h2>Presupuesto de ' + mes + '</h2>' + (pb.hay ? etiquetaPres(pb) : '') + '</div>';
@@ -2409,7 +2509,7 @@ if (typeof module !== 'undefined') module.exports = M;
     H += '</section>';
 
     // ---- 4. Próximos pagos ----
-    var prox = M.listaPagos({ desde: h, hasta: M.addDays(h, 60), estados: { pend: 1, porconf: 1 } }).filter(function (x) { return x.clase !== 'ingreso' && !x.m.incompleto; }).slice(0, 4);
+    var prox = M.listaPagos({ desde: h, hasta: M.addDays(h, 60), estados: { pend: 1, porconf: 1 } }).filter(function (x) { return x.clase !== 'ingreso' && !x.m.incompleto && !yaVisto[x.m.id]; }).slice(0, 4);
     H += '<div class="sec"><span>Próximos pagos</span><button data-a="ir" data-v="pagos">Ver todos</button></div><div class="lista">' +
       (prox.length ? prox.map(function (x) { return filaMov(x.m, { urg: 1 }); }).join('') : '<div class="vacio">No hay pagos programados.</div>') + '</div>';
 
@@ -2417,7 +2517,7 @@ if (typeof module !== 'undefined') module.exports = M;
     var fs = [['Efectivo y débito', p.dinero, q.dinero, 'var(--pos)'], ['Por cobrar', p.cobrar, q.cobrar, 'var(--aviso)'], ['Tarjetas propias', -p.tarjetas, -q.tarjetas, 'var(--tc)'], ['Préstamos, tu parte', -p.prestamos, -q.prestamos, 'var(--prest)']];
     var ms = Math.max.apply(null, fs.map(function (f) { return Math.max(Math.abs(f[1]), Math.abs(f[2])); }).concat([1]));
     H += '<section class="tarj"><div class="cab"><span class="eti">Posición total hoy</span><div class="leyenda"><span><i></i>hoy</span><span><u></u>fin de mes</span></div></div>' +
-      '<div class="gran sm' + (p.total < 0 ? ' neg' : '') + '">' + dinG(p.total) + '</div>' +
+      '<div class="gran sm">' + dinG(p.total) + '</div>' +
       '<p class="nota" style="margin:0 0 4px">Presupuestada a fin de mes: <b class="num">' + din(q.total) + '</b></p>' +
       fs.map(function (f) {
         return '<div class="sl"><div class="sl-t"><span><i style="background:' + f[3] + '"></i>' + f[0] + '</span><b class="' + (f[1] < 0 && f[0] === 'Efectivo y débito' ? 'neg' : '') + '">' + din0(f[1]) + '</b></div>' +
@@ -2677,8 +2777,8 @@ if (typeof module !== 'undefined') module.exports = M;
       var on = c.desde <= selDesde && selDesde <= c.hasta, t = c.t + (c.sub ? '<small>' + c.sub + '</small>' : '');
       return c.ref ? '<button data-a="anIr" data-v="' + c.ref + '"' + (c.mes ? ' data-m="1"' : '') + ' class="' + (on ? 'on' : '') + '" aria-label="Ver ' + esc(c.desde) + '">' + t + '</button>' : '<span class="' + (on ? 'on' : '') + '">' + t + '</span>';
     }).join('');
-    return '<div class="barras"><svg viewBox="0 0 300 102" role="img" aria-label="' + (soloG ? 'Gastos' : 'Ingresos y gastos') + ' por periodo">' + R +
-      '<line x1="0" x2="300" y1="100.5" y2="100.5" style="stroke:var(--linea)" stroke-width="1"/><text x="2" y="10">' + corto(mx) + '</text></svg></div>' +
+    return '<div class="barras"><svg viewBox="0 0 300 102" preserveAspectRatio="none" role="img" aria-label="' + (soloG ? 'Gastos' : 'Ingresos y gastos') + ' por periodo">' + R +
+      '<line x1="0" x2="300" y1="100.5" y2="100.5" style="stroke:var(--linea)" stroke-width="1" vector-effect="non-scaling-stroke"/></svg><span class="bmax">' + corto(mx) + '</span></div>' +
       '<div class="evo-x" style="grid-template-columns:repeat(' + n + ',1fr)">' + B + '</div>' +
       '<div class="leyenda" style="margin-top:10px">' + (soloG ? '' : '<span><i style="background:var(--pos)"></i>ingresos</span>') + '<span><i style="background:var(--tinta)"></i>gastos</span>' + (prom > 0 && pasados.length > 1 ? '<span><i class="raya"></i>promedio ' + din0(prom) + '</span>' : '') + '</div>';
   }
@@ -3176,7 +3276,7 @@ if (typeof module !== 'undefined') module.exports = M;
       if (h > 0.3) R += '<rect x="' + (i * w + 17) + '" y="' + (94 - h).toFixed(1) + '" width="16" height="' + h.toFixed(1) + '" rx="3" style="fill:' + col + '"/>';
       if (x.t) { var y = (94 - x.t / mx * 80).toFixed(1); R += '<line x1="' + (i * w + 11) + '" x2="' + (i * w + 39) + '" y1="' + y + '" y2="' + y + '" style="stroke:var(--tinta)" stroke-width="2" stroke-linecap="round"/>'; }
     });
-    return '<div class="barras"><svg viewBox="0 0 300 98" role="img" aria-label="Gasto contra tope de los últimos seis meses">' + R + '<line x1="0" x2="300" y1="94.5" y2="94.5" style="stroke:var(--linea)" stroke-width="1"/></svg></div>' +
+    return '<div class="barras"><svg viewBox="0 0 300 98" preserveAspectRatio="none" role="img" aria-label="Gasto contra tope de los últimos seis meses">' + R + '<line x1="0" x2="300" y1="94.5" y2="94.5" style="stroke:var(--linea)" stroke-width="1"/></svg></div>' +
       '<div class="meses6">' + d.map(function (x) { return '<span class="' + (x.m === ym ? 'on' : '') + '">' + MES[+x.m.slice(5) - 1] + '<small>' + din0(x.v) + '</small></span>'; }).join('') + '</div>' +
       '<div class="leyenda" style="margin-top:8px"><span><i style="background:var(--pos)"></i>gastado</span><span><u></u>tope de ese mes</span></div>';
   }
@@ -3657,7 +3757,14 @@ if (typeof module !== 'undefined') module.exports = M;
     document.querySelectorAll('#nav button').forEach(function (b) { b.classList.toggle('on', b.dataset.v === ui.vista); b.setAttribute('aria-current', b.dataset.v === ui.vista ? 'page' : 'false'); });
     document.body.classList.toggle('en-registro', ui.vista === 'registrar');
     $('#vista').setAttribute('data-v', ui.vista);
-    $('#vista').innerHTML = { inicio: vInicio, registrar: vRegistrar, movs: vMovs, plan: vPlan, analisis: vAnalisis, cuentas: vCuentas }[ui.vista]();
+    var html;
+    try { html = { inicio: vInicio, registrar: vRegistrar, movs: vMovs, plan: vPlan, analisis: vAnalisis, cuentas: vCuentas }[ui.vista](); }
+    catch (e) { // un dato raro no debe dejar la app en blanco: se avisa y el resto de pantallas sigue funcionando
+      if (window.console) console.error(e);
+      html = '<div class="tarj"><h2>No se pudo mostrar esta pantalla</h2><p class="nota">Tus datos siguen guardados en este dispositivo. Prueba otra pantalla o descarga un respaldo desde Cuentas › Respaldo.</p><p class="nota num">' + esc(e && e.message || e) + '</p>' +
+        '<div class="btns"><button class="btn sec2" data-a="ir" data-v="' + (ui.vista === 'cuentas' ? 'inicio' : 'cuentas') + '">Ir a ' + (ui.vista === 'cuentas' ? 'Inicio' : 'Cuentas') + '</button></div></div>';
+    }
+    $('#vista').innerHTML = html;
     pintaSync();
     document.querySelectorAll('#vista .chips').forEach(function (c) { // que el filtro activo quede a la vista
       var on = c.querySelector('.chip.on'); if (on && (on.offsetLeft + on.offsetWidth > c.clientWidth + c.scrollLeft || on.offsetLeft < c.scrollLeft)) c.scrollLeft = Math.max(0, on.offsetLeft - 40);
@@ -3671,6 +3778,7 @@ if (typeof module !== 'undefined') module.exports = M;
   function aplicarTema() {
     var t = cfg.tema === 'light' || cfg.tema === 'dark' ? cfg.tema : '';
     if (t) document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme');
+    document.querySelectorAll('meta[name=theme-color]').forEach(function (m) { m.content = t ? (t === 'dark' ? '#0E1422' : '#F6F7F9') : /dark/.test(m.media) ? '#0E1422' : '#F6F7F9'; });
   }
   function borrDe(root) { return root.dataset.b === 'reg' ? ui.borr : ui.borrH; }
   function repintaForm(el) {
